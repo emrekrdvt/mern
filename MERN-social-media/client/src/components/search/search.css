@@ -1,0 +1,21 @@
+/* Stil Search bileşeni için */
+
+
+.userItem {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.userItem img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.userItem p {
+  margin: 0;
+}
