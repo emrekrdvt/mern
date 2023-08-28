@@ -2,7 +2,7 @@
 ## mern projects
 
 
-## [social-media](./social-media)
+## [social-media](./MERN-social-media)
 
 - A social media application was built using react, nodejs and mongodb. In this application you can instantly message with your online friends. You can share posts and photos, change your profile photo and cover photo. 
 
