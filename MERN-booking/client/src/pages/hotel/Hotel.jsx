@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Header from "../../components/header/Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,40 +7,35 @@ import {
   faCircleArrowRight,
   faCircleXmark,
   faLocationDot,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { MailList } from "../../components/mailList/MailList";
 import { Footer } from "../../components/footer/Footer";
 import "./hotel.css";
+import { useLocation, useNavigate } from "react-router-dom";
+import useFetch from "../../hooks/useFetch";
+import { SearchContext } from "../../context/SearchContext";
+import { AuthContext } from "../../context/AuthContext";
+import { Reserve } from "../../components/reserve/Reserve";
 
 export default function Hotel() {
-  const photos = [
-    {
-      src: "https://tolkiengateway.net/w/images/thumb/9/93/Ralph_Damiani_-_Across_Middle-earth_-_The_White_City.png/1200px-Ralph_Damiani_-_Across_Middle-earth_-_The_White_City.png",
-    },
-    {
-      src: "https://v4m9y9w9.rocketcdn.me/wp-content/uploads/2019/03/rivendell-bookstr.jpg",
-    },
-    {
-      src: "https://www.doc.govt.nz/globalassets/images/places/lord-of-the-rings-locations/putangirua-pinnacles-1200.jpg",
-    },
-    {
-      src: "https://i.insider.com/56094329dd0895057e8b45de?width=1200&format=jpeg",
-    },
-    {
-      src: "https://tolkiengateway.net/w/images/thumb/9/93/Ralph_Damiani_-_Across_Middle-earth_-_The_White_City.png/1200px-Ralph_Damiani_-_Across_Middle-earth_-_The_White_City.png",
-    },
-    {
-      src: "https://tolkiengateway.net/w/images/thumb/9/93/Ralph_Damiani_-_Across_Middle-earth_-_The_White_City.png/1200px-Ralph_Damiani_-_Across_Middle-earth_-_The_White_City.png",
-    },
-  ];
-
   const [slideNumber, setSlideNumber] = useState(0);
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-
+  const [openModal, setOpenModal] = useState(false);
+  const location = useLocation().pathname.split("/")[2];
+  const apiUrl = process.env.REACT_APP_URL;
+  const noPhoto = [process.env.REACT_APP_NP];
+  const { date, options } = useContext(SearchContext);
+  const { user } = useContext(AuthContext);
   const handleOpen = (i) => {
     setSlideNumber(i);
     setOpen(true);
   };
+
+  const { data, loading, error } = useFetch(
+    `${apiUrl}/hotels/find/${location}`
+  );
 
   const handleMove = (direction) => {
     let newSlideNumber;
@@ -51,90 +46,114 @@ export default function Hotel() {
     setSlideNumber(newSlideNumber);
   };
 
+  const dayDiff = (date) => {
+    if (date.length > 0) {
+      var start = date[0].startDate;
+      var end = date[0].endDate;
+      const ml = 1000 * 3600 * 24;
+      const timeDiff = Math.abs(end.getTime() - start.getTime());
+      const convertDay = Math.ceil(timeDiff / ml);
+      return convertDay;
+    }
+    else
+      navigate("/")
+  };
+
+  const days = dayDiff(date);
+
+  const handleClick = () => {
+    if (user) {
+      setOpenModal(true);
+    } else {
+      navigate("/login");
+    }
+  };
   return (
     <div>
       <Navbar></Navbar>
       <Header type={"List"}></Header>
-      <div className="hotelContainer">
-        {open && (
-          <div className="slider">
-            <FontAwesomeIcon
-              onClick={() => setOpen(false)}
-              className="close"
-              icon={faCircleXmark}
-            />
-            <FontAwesomeIcon
-              className="arrow"
-              icon={faCircleArrowLeft}
-              onClick={() => handleMove("l")}
-            />
-            <div className="sliderWrapper">
-              <img src={photos[slideNumber].src} alt="" className="sliderImg" />
-            </div>
-            <FontAwesomeIcon
-              className="arrow"
-              icon={faCircleArrowRight}
-              onClick={() => handleMove("r")}
-            />
-          </div>
-        )}
-        <div className="hotelWrapper">
-          <button className="bookNow">Reserve or Book now</button>
-          <h1 className="hotelTitle">Minas Tirith</h1>
-          <div className="hotelAdress">
-            <FontAwesomeIcon icon={faLocationDot}></FontAwesomeIcon>
-            <span>Away from the darkness </span>
-          </div>
-          <span className="hotelDistance">
-            Excellent location from war center
-          </span>
-          <span className="hotelPriceHighlight">
-            Book a stay ver $143 blablabla.
-          </span>
-          <div className="hotelImages">
-            {photos.map((e, i) => (
-              <div className="hotelImgWrapper">
+      {loading ? (
+        <FontAwesomeIcon icon={faSpinner} spin spinReverse />
+      ) : (
+        <div className="hotelContainer">
+          {open && (
+            <div className="slider">
+              <FontAwesomeIcon
+                onClick={() => setOpen(false)}
+                className="close"
+                icon={faCircleXmark}
+              />
+              <FontAwesomeIcon
+                className="arrow"
+                icon={faCircleArrowLeft}
+                onClick={() => handleMove("l")}
+              />
+              <div className="sliderWrapper">
                 <img
-                  onClick={() => handleOpen(i)}
-                  src={e.src}
+                  src={data.photos[slideNumber]}
                   alt=""
-                  className="hotelImg"
+                  className="sliderImg"
                 />
               </div>
-            ))}
-          </div>
-          <div className="hotelDetails">
-            <div className="hotelDetailsTexts">
-              <h1 className="hotelTitle">Stay in the heat of Minas Tirith</h1>
-              <p className="hotelDesc">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Perferendis, repellendus veniam, officiis quos facere dicta nam
-                temporibus doloremque cumque ratione aspernatur unde molestiae
-                ipsum, corporis non minima rem consequatur assumenda. Ipsum
-                vitae eum magni, rem ducimus voluptatem voluptates atque, odit
-                explicabo dolorem inventore incidunt nisi vel recusandae sint
-                consectetur nihil dignissimos! Rerum non eos laboriosam facilis
-                ad est inventore corrupti! Porro excepturi fugit, laudantium,
-                ipsam nostrum iure repellat omnis at soluta placeat in? Sit
-                officia iusto unde. Porro voluptatem rerum eligendi ullam quos
-              </p>
+              <FontAwesomeIcon
+                className="arrow"
+                icon={faCircleArrowRight}
+                onClick={() => handleMove("r")}
+              />
             </div>
-            <div className="hotelDetailsPrice">
-              <h1>Perfect for a 9 night stay</h1>
-              <span>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis
-                illum soluta consectetur consequuntur natus sequi asperiores{" "}
-              </span>
-              <h2>
-                <b>$123</b> (9 night)
-              </h2>
-              <button>Reserve or Book now</button>
+          )}
+          <div className="hotelWrapper">
+            <button className="bookNow">Reserve or Book now</button>
+            <h1 className="hotelTitle">{data.name}</h1>
+            <div className="hotelAdress">
+              <FontAwesomeIcon icon={faLocationDot}></FontAwesomeIcon>
+              <span>{data.city} </span>
+            </div>
+            <span className="hotelDistance">
+              {data.distance} m away from the
+            </span>
+            <span className="hotelPriceHighlight">
+              Starting from ${data.cheapestPrice}
+            </span>
+            <div className="hotelImages">
+              {data.photos?.map((e, i) => (
+                <div className="hotelImgWrapper" key={i}>
+                  <img
+                    onClick={() => handleOpen(i)}
+                    src={e}
+                    alt=""
+                    className="hotelImg"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="hotelDetails">
+              <div className="hotelDetailsTexts">
+                <h1 className="hotelTitle">{data.title}</h1>
+                <p className="hotelDesc">{data.desc}</p>
+              </div>
+              <div className="hotelDetailsPrice">
+                <h1>Perfect for a {days}-night stay</h1>
+                <span>
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                  Facilis illum soluta consectetur consequuntur natus sequi
+                  asperiores{" "}
+                </span>
+                <h2>
+                  <b>${days * data.cheapestPrice * options.room}</b> for {days}{" "}
+                  night
+                </h2>
+                <button onClick={handleClick}>Reserve or Book now</button>
+              </div>
             </div>
           </div>
+          <MailList></MailList>
+          <Footer></Footer>
         </div>
-        <MailList></MailList>
-        <Footer></Footer>
-      </div>
+      )}
+      {openModal && (
+        <Reserve setOpen={setOpenModal} hotelId={data._id}></Reserve>
+      )}
     </div>
   );
 }

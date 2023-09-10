@@ -3,6 +3,7 @@ const app = express();
 const dotenv = require("dotenv").config();
 const path = require("path");
 const mongoose = require("mongoose");
+const cors = require("cors");
 var cookieParser = require("cookie-parser");
 
 const authRoute = require("./routes/auth");
@@ -11,7 +12,7 @@ const hotelsRoute = require("./routes/hotels");
 const roomsRoute = require("./routes/rooms");
 
 const DBURL = process.env.DBURL;
-
+const frontUrl = process.env.FRURL;
 const connect = async () => {
   try {
     await mongoose.connect(DBURL);
@@ -21,7 +22,12 @@ const connect = async () => {
   }
 };
 
-app.use(cookieParser())
+app.use(
+  cors({
+    origin: [frontUrl],
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoute);

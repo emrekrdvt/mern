@@ -6,6 +6,9 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { DateRange } from "react-date-range";
 import { SearchItem } from "../../components/searchItem/SearchItem";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import useFetch from "../../hooks/useFetch";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 export default function List() {
   const location = useLocation();
@@ -13,6 +16,19 @@ export default function List() {
   const [destination, setDestination] = useState(location.state.destination);
   const [date, setDate] = useState(location.state.date);
   const [option, setOption] = useState(location.state.options);
+  const [min, setMin] = useState(1);
+  const [max, setMax] = useState(99999);
+
+  const apiUrl = process.env.REACT_APP_URL;
+
+
+  const { data, loading, error, reFetch } = useFetch(
+    `${apiUrl}/hotels?city=${destination}&min=${min}&max=${max}`
+  );
+
+  const handleClick = () => {
+    reFetch();
+  };
 
   return (
     <div>
@@ -51,13 +67,21 @@ export default function List() {
                   <span className="listOptionText">
                     Min price <small>per night</small>
                   </span>
-                  <input type="number" className="listOptionInput" />
+                  <input
+                    type="number"
+                    className="listOptionInput"
+                    onChange={(e) => setMin(e.target.value)}
+                  />
                 </div>
                 <div className="listOptionItem">
                   <span className="listOptionText">
                     Max price <small>per night</small>
                   </span>
-                  <input type="number" className="listOptionInput" />
+                  <input
+                    type="number"
+                    className="listOptionInput"
+                    onChange={(e) => setMax(e.target.value)}
+                  />
                 </div>
                 <div className="listOptionItem">
                   <span className="listOptionText">Adult </span>
@@ -88,17 +112,18 @@ export default function List() {
                 </div>
               </div>
             </div>
-            <button >Search</button>
+            <button onClick={handleClick}>Search</button>
           </div>
           <div className="listResult">
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
-            <SearchItem></SearchItem>
+            {loading ? (
+              <FontAwesomeIcon icon={faSpinner} spin spinReverse />
+            ) : (
+              <>
+                {data.map((e) => (
+                  <SearchItem hotel={e} key={e._id}></SearchItem>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>

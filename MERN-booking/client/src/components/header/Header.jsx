@@ -9,15 +9,18 @@ import {
   faTaxi,
 } from "@fortawesome/free-solid-svg-icons";
 import { DateRange } from "react-date-range";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import "react-date-range/dist/styles.css"; // main css file
 import "react-date-range/dist/theme/default.css"; // theme css file
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { SearchContext } from "../../context/SearchContext";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Header({ type }) {
   const [destination, setDestination] = useState("");
   const [openDate, setOpenDate] = useState(false);
+  const { user } = useContext(AuthContext);
   const [date, setDate] = useState([
     {
       startDate: new Date(),
@@ -42,9 +45,12 @@ export default function Header({ type }) {
     });
   };
 
+  const { dispatch } = useContext(SearchContext);
+
   const navigate = useNavigate();
   const handleSearch = () => {
-    navigate("/hotels", {state: {destination,date,options}});
+    dispatch({ type: "NEW_SEARCH", payload: { destination, date, options } });
+    navigate("/hotels", { state: { destination, date, options } });
   };
 
   return (
@@ -76,7 +82,11 @@ export default function Header({ type }) {
           <>
             <h1 className="headerTitle">Find ur adventure!</h1>
             <p className="headerDesc">Let's travel with FCF</p>
-            <button className="headerBtn">Sign in / Register</button>
+            {user ? (
+              `Hello ${user.username}`
+            ) : (
+              <button className="headerBtn">Sign in / Register</button>
+            )}
             <div className="headerSearch">
               <div className="headerSearchItem">
                 <FontAwesomeIcon icon={faHotel} className="headerIcon" />
@@ -109,12 +119,12 @@ export default function Header({ type }) {
                   />
                 )}
               </div>
-              <div
-                className="headerSearchItem"
-                onClick={() => setOptions(!openOptions)}
-              >
+              <div className="headerSearchItem">
                 <FontAwesomeIcon icon={faPerson} className="headerIcon" />
-                <span className="headerSearchText">{`${options.adult} adult - ${options.children} children - ${options.room} room`}</span>
+                <span
+                  onClick={() => setOptions(!openOptions)}
+                  className="headerSearchText"
+                >{`${options.adult} adult - ${options.children} children - ${options.room} room`}</span>
 
                 {openOptions && (
                   <div className="option">

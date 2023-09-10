@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./pages/home/Home";
 import List from "./pages/list/List";
 import Hotel from "./pages/hotel/Hotel";
+import { Login } from "./pages/login/Login";
+
 
 const router = createBrowserRouter([
   {
@@ -16,10 +18,14 @@ const router = createBrowserRouter([
     path: "/hotels/:id",
     element: <Hotel></Hotel>
   },
+  {
+    path: "/login",
+    element: <Login></Login>
+  },
 ]);
 
 
-function App() {
+function App() { 
   return <div className="App">
     <RouterProvider router={router}/>
   </div>;

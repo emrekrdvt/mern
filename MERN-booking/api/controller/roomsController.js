@@ -24,9 +24,13 @@ exports.createRoom = async (req, res, next) => {
 
 exports.updateRoom = async (req, res, next) => {
   try {
-    const updatedRoom = await Room.findByIdAndUpdate(req.params.id, {
-      $set: req.body,
-    });
+    const updatedRoom = await Room.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+      },
+      { new: true }
+    );
     res.status(200).json(updatedRoom);
   } catch (error) {
     next(error);
@@ -61,6 +65,20 @@ exports.getAllRoom = async (req, res, next) => {
   try {
     const rooms = await Room.find();
     res.status(200).json(rooms);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateAvlb = async (req, res, next) => {
+  try {
+    await Room.updateOne(
+      { "roomNumbers._id": req.params.id },
+      {
+        $push: { "roomNumbers.$.unavaliableDates": req.body.dates },
+      }
+    );
+    res.status(200).json("Room number has ben updated");
   } catch (error) {
     next(error);
   }
